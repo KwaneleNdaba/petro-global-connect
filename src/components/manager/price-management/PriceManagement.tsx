@@ -151,7 +151,7 @@ const PriceManagement = () => {
                     setFuelProducts(newProducts);
                   }}
                   className="text-2xl font-bold bg-transparent border-b-2 border-neutral-200 focus:border-neutral-600 w-24 pl-1"
-                  step="0.01"
+                  step="1"
                   aria-label={`${product.name} price`}
                 />
                 <span className="text-sm text-neutral-600 mb-1">/liter</span>
@@ -241,7 +241,7 @@ const PriceManagement = () => {
                             setStoreProducts(newProducts);
                           }}
                           className="p-1.5 border border-neutral-200 rounded-md w-24 text-sm focus:ring-2 focus:ring-neutral-600"
-                          step="0.01"
+                          step="1"
                           aria-label={`New price for ${product.name}`}
                         />
                         <span className="text-xs text-neutral-500">ZAR</span>
@@ -319,7 +319,7 @@ const PriceManagement = () => {
                       );
                     }}
                     className="p-1.5 border border-neutral-200 rounded-md w-24 text-sm focus:ring-2 focus:ring-neutral-600"
-                    step="0.01"
+                    step="1"
                     aria-label={`Price for ${service.name}`}
                   />
                   <span className="text-xs text-neutral-600">
