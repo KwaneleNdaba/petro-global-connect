@@ -49,15 +49,20 @@ const OrderManagement = () => {
       id: generateOrderId(newOrderType),
       status: newOrder.status || 'Pending',
       date: new Date().toISOString().split('T')[0],
-      ...newOrder,
+      supplier: newOrder.supplier || '',
       quantity: Number(newOrder.quantity),
       price: Number(newOrder.price),
+      // Add type/product based on order type
+      ...(newOrderType === 'fuel' 
+        ? { type: newOrder.type } 
+        : { product: newOrder.product })
     } as Order;
-
+  
     setOrders([order, ...orders]);
     setShowOrderForm(false);
     setNewOrder({ status: 'Pending' });
   };
+  
 
   const [orders, setOrders] = useState<Order[]>([
     {
@@ -200,26 +205,42 @@ const OrderManagement = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setNewOrderType('fuel')}
-                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'fuel'
-                          ? 'bg-neutral-600 text-white'
-                          : 'bg-neutral-100 text-neutral-700'
-                        }`}
-                    >
-                      Fuel
-                    </button>
-                    <button
-                      onClick={() => setNewOrderType('product')}
-                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'product'
-                          ? 'bg-neutral-600 text-white'
-                          : 'bg-neutral-100 text-neutral-700'
-                        }`}
-                    >
-                      Product
-                    </button>
-                  </div>
+                <div className="flex gap-2">
+  <button
+    onClick={() => {
+      setNewOrderType('fuel');
+      setNewOrder(prev => ({ 
+        ...prev, 
+        product: undefined,
+        type: fuelTypes[0] 
+      }));
+    }}
+    className={`px-3 py-1 rounded-md text-sm ${
+      newOrderType === 'fuel'
+        ? 'bg-neutral-600 text-white'
+        : 'bg-neutral-100 text-neutral-700'
+    }`}
+  >
+    Fuel
+  </button>
+  <button
+    onClick={() => {
+      setNewOrderType('product');
+      setNewOrder(prev => ({ 
+        ...prev, 
+        type: undefined,
+        product: products[0] 
+      }));
+    }}
+    className={`px-3 py-1 rounded-md text-sm ${
+      newOrderType === 'product'
+        ? 'bg-neutral-600 text-white'
+        : 'bg-neutral-100 text-neutral-700'
+    }`}
+  >
+    Product
+  </button>
+</div>
 
                   {newOrderType === 'fuel' ? (
                     <select
@@ -258,6 +279,7 @@ const OrderManagement = () => {
                     }
                     className="w-full p-1.5 border border-neutral-200 rounded-md text-sm"
                   >
+                    <option>Select Supplier</option>
                     {suppliers[newOrderType].map((supplier) => (
                       <option key={supplier} value={supplier}>
                         {supplier}
@@ -364,15 +386,19 @@ const OrderManagement = () => {
                     </td>
                     <td className="p-3 text-neutral-600">{order.date}</td>
                     <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        {order.type || order.product}
-                        {order.type && (
-                          <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
-                            Fuel
-                          </span>
-                        )}
-                      </div>
-                    </td>
+  <div className="flex items-center gap-2">
+    {newOrderType === 'fuel' ? order.type : order.product}
+    {order.type ? (
+      <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
+        Fuel
+      </span>
+    ) : (
+      <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
+        Product
+      </span>
+    )}
+  </div>
+</td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Truck className="w-4 h-4 text-neutral-400" />
