@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { usePathname, useRouter } from 'next/navigation';
 import AddStationModal from './AddStationModal';
+import Cookies from 'universal-cookie';
 
 type StationCardProps = {
   station: IStation;
@@ -17,23 +18,29 @@ export default function StationCard({ station }: StationCardProps) {
 
   const [stationId, setStationId] = useState<number>(0);
   const [openConfirmationModal, setOpenConfirmationModal] = useState(false);
+  const cookies = new Cookies();
+  const user = cookies.get("userCredentials");
   const [selectedStation, setSelectedStation] = useState<IStation>();
-  const [show, setShow] = useState(false);
   const pathname = usePathname();
+  const [show, setShow] = useState(false);
   const router = useRouter();
   const deleteStation = async () => {
     try {
       await STATION_API.DELETE_STATION(stationId);
       const date = new Date();
-      router.replace(`${pathname}?refreshId=${date.getTime()}`)
+      // router.replace(`${pathname}?refreshId=${date.getTime()}`)
     } catch (error) {
       console.error(error)
     }
   }
 
-  const handleRoute = (station:IStation)=>{
-    if(pathname.startsWith("/super")){
-      router.push(`${pathname}/${station.id}?station-name=${station?.name}`)
+  const handleRoute = (station: IStation) => {
+    if (user?.role === "SuperAdmin") {
+      router.push(`/super/stations/${station.id}?station-name=${station?.name}`);
+    } else if (user?.role === "Admin") {
+      router.push(`/admin/dashboard`);
+    } else if (user?.role === "Manager") {
+      router.push(`/manager/dashboard`);
     }
   }
 
@@ -124,21 +131,23 @@ export default function StationCard({ station }: StationCardProps) {
           </span>
         </div>
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <button onClick={() => {
-          setShow(true);
-          setSelectedStation(station)
-        }} className="p-2 rounded-full bg-green-100  cursor-pointer hover:bg-green-200 transition">
-          <Pencil className="w-4 h-4 text-green-600" />
-        </button>
-        <button onClick={() => {
-          setStationId(station.id!);
-          setOpenConfirmationModal(true)
+      {
+        pathname.startsWith("/super") && <div className="flex items-center justify-end space-x-2">
+          <button onClick={() => {
+            setShow(true);
+            setSelectedStation(station)
+          }} className="p-2 rounded-full bg-green-100  cursor-pointer hover:bg-green-200 transition">
+            <Pencil className="w-4 h-4 text-green-600" />
+          </button>
+          <button onClick={() => {
+            setStationId(station.id!);
+            setOpenConfirmationModal(true)
 
-        }} className="p-2 rounded-full bg-red-100 cursor-pointer hover:bg-red-200 transition">
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </button>
-      </div>
+          }} className="p-2 rounded-full bg-red-100 cursor-pointer hover:bg-red-200 transition">
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </button>
+        </div>
+      }
       <ConfirmationModal
         show={openConfirmationModal}
         isLoading={false}

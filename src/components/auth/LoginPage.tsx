@@ -30,43 +30,46 @@ const LoginPage = () => {
     }, []);
 
 
-    const handleLogin = async (e: any) => {
+    const handleLogin = (e: any) => {
         e.preventDefault();
         setLoginError('');
-        try {
-            const payload = {
-                email,
-                password
-            }
-            setLoading(true);
-            const authResponse: any = await AUTH_API.LOGIN_POST(payload);
-            if (authResponse.data.accessToken) {
-                cookies.remove("token", {
+        setLoading(true);
+
+        // Mock login credentials
+        const mockUsers = [
+            { email: 'superadmin@example.com', password: 'superadmin123', role: 'SuperAdmin' },
+            { email: 'admin@example.com', password: 'admin123', role: 'Admin' },
+            { email: 'manager@example.com', password: 'manager123', role: 'Manager' }
+        ];
+
+        const user = mockUsers.find(user => user.email === email && user.password === password);
+
+        setTimeout(() => {
+            if (user) {
+                const userCredentials = {
+                    email: user.email,
+                    role: user.role
+                };
+
+                cookies.set("userCredentials", JSON.stringify(userCredentials), {
                     path: '/',
                     secure: true,
                     sameSite: 'lax'
                 });
-                encryptToken(authResponse.data);
-                const decodedUserData: IDecodedJWT = jwtDecode(authResponse.data.accessToken);
 
-                if (decodedUserData.role === "SuperAdmin") {
+                if (user.role === "SuperAdmin") {
                     router.replace("/super/stations");
-                } else {
-                    router.replace("/employee/dashboard");
-
+                } else if (user.role === "Admin") {
+                    router.replace("/stations");
+                } else if (user.role === "Manager") {
+                    router.replace("/manager/dashboard");
                 }
-            } else if (authResponse.data.message) {
-                setLoginError(authResponse.data.message);
-                setLoading(false);
             } else {
                 setLoading(false);
-                setLoginError("Internal server error. Please try again later.");
+                setLoginError("Invalid email or password.");
             }
-
-        } catch (error) {
-            console.error(error);
-            setLoading(false);
-        }
+        }, 3000);
+       
     };
 
     return (

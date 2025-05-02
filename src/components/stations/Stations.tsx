@@ -6,12 +6,77 @@ import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import AddStationModal from './AddStationModal';
-import { STATION_API } from '@/api/endpoints/rest-api/station/station';
 import StationCard from './StationCard';
 import { StationCardSkeleton } from '../skeleton/station/StationCardSkeleton';
 import { EmptyStationsState } from './EmptyStationsState';
 
-
+// Mock data for stations
+const mockStations: IStation[] = [
+  {
+    id: 1,
+    name: "Engen Midrand",
+    location: "Midrand, GP",
+    address: "123 Main St",
+    phoneNumber: "123-456-7890",
+    operatingHours: "24/7",
+    assignedEmployees: 5,
+    imageUrl: { url: "/engen-logo.png", publicId: "engen-logo" },
+    fuelTypesAvailable: ["Petrol 93", "Diesel"],
+    facilities: ["ATM", "Car Wash"],
+    lowOnStock: false,
+    status: "Active",
+    fuelStock: "12,500L",
+    sales: "R 45,000",
+  },
+  {
+    id: 2,
+    name: "Sasol Germiston",
+    location: "Germiston, GP",
+    address: "456 Elm St",
+    phoneNumber: "987-654-3210",
+    operatingHours: "6 AM - 10 PM",
+    assignedEmployees: 3,
+    imageUrl: { url: "/sasol-logo.png", publicId: "sasol-logo" },
+    fuelTypesAvailable: ["Petrol 95", "Electric"],
+    facilities: ["Convenience Store", "Restrooms"],
+    lowOnStock: true,
+    status: "Low Stock",
+    fuelStock: "8,200L",
+    sales: "R 30,200",
+  },
+  {
+    id: 3,
+    name: "Total Bedfordview",
+    location: "Johannesburg, GP",
+    address: "789 Oak St",
+    phoneNumber: "555-555-5555",
+    operatingHours: "5 AM - 11 PM",
+    assignedEmployees: 4,
+    imageUrl: { url: "/total-logo.png", publicId: "total-logo" },
+    fuelTypesAvailable: ["Diesel", "LPG"],
+    facilities: ["Air Pump", "Vending Machines"],
+    lowOnStock: false,
+    status: "Active",
+    fuelStock: "15,300L",
+    sales: "R 52,700",
+  },
+  {
+    id: 4,
+    name: "BP Hatfield",
+    location: "Pretoria, GP",
+    address: "321 Pine St",
+    phoneNumber: "444-444-4444",
+    operatingHours: "7 AM - 9 PM",
+    assignedEmployees: 2,
+    imageUrl: { url: "/bp.png", publicId: "bp-logo" },
+    fuelTypesAvailable: ["Petrol 93", "Petrol 95"],
+    facilities: ["ATM", "Restrooms"],
+    lowOnStock: true,
+    status: "Closed",
+    fuelStock: "6,400L",
+    sales: "R 21,500",
+  },
+];
 
 const cardVariants = {
   initial: { opacity: 0, y: 20 },
@@ -25,32 +90,21 @@ const StationsGrid = () => {
   const refreshId = searchParams.get("refreshId");
   const [loading, setLoading] = useState(false);
 
-
   const router = useRouter();
 
   const [stations, setStations] = useState<IStation[]>([]);
 
   const selectStation = (station: IStation) => {
     localStorage.setItem("station", JSON.stringify(station));
-    router.push("/manager/dashboard")
+    router.push("/manager/dashboard");
   };
 
-
-  const getAllStations = async () => {
-    try {
-      setLoading(true)
-      const getStations = await STATION_API.GET_ALL_STATIONS();
-      setStations(getStations.data ?? [])
-      setLoading(false);
-    } catch (error) {
-      setLoading(false)
-      throw error;
-    }
-  }
-
   useEffect(() => {
-    getAllStations();
-  }, [refreshId])
+    setLoading(true);
+    // Use mock data instead of API call
+    setStations(mockStations);
+    setLoading(false);
+  }, [refreshId]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -83,7 +137,6 @@ const StationsGrid = () => {
           )}
         </div>
 
-
         {/* Stations Grid */}
         <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {!loading && stations.map((station) => (
@@ -102,9 +155,8 @@ const StationsGrid = () => {
           {loading && Array.from({ length: 4 }).map((_, index) => (
             <StationCardSkeleton key={index} />
           ))}
-          
-       </div>
-        {(!loading && stations.length === 0 )&& <EmptyStationsState/>}
+        </div>
+        {(!loading && stations.length === 0) && <EmptyStationsState />}
       </div>
       <AddStationModal
         show={show}

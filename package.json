@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --no-lint",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "flowbite-react patch"
+    "postinstall": "flowbite-react patch",
+    "export": "next export --no-lint"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "apexcharts": "^4.7.0",
     "axios": "^1.9.0",
+    "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "flowbite-react": "^0.11.7",
     "framer-motion": "^12.9.2",
@@ -26,12 +30,14 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-phone-input-2": "^2.15.1",
+    "tailwind-merge": "^3.2.0",
     "universal-cookie": "^8.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4.1.1",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

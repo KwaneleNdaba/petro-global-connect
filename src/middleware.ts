@@ -4,52 +4,52 @@ import { jwtDecode } from "jwt-decode";
 import { IDecodedJWT } from "./interfaces/auth/auth";
 
 export function middleware(request: NextRequest) {
-  const encryptedUserCookie: any = request.cookies.get("token")?.value;
-  const { pathname } = request.nextUrl;
+  // const encryptedUserCookie: any = request.cookies.get("token")?.value;
+  // const { pathname } = request.nextUrl;
 
-  if (
-    pathname === "/" ||
-    pathname.startsWith("/_next/") ||
-    pathname.includes(".") ||
-    pathname.startsWith("/api/")
-  ) {
-    return NextResponse.next();
-  }
+  // if (
+  //   pathname === "/" ||
+  //   pathname.startsWith("/_next/") ||
+  //   pathname.includes(".") ||
+  //   pathname.startsWith("/api/")
+  // ) {
+  //   return NextResponse.next();
+  // }
 
-  if (!encryptedUserCookie) {
-    console.log("No token found, redirecting...");
-    return NextResponse.redirect(new URL("/", request.nextUrl.origin));
-  }
+  // if (!encryptedUserCookie) {
+  //   console.log("No token found, redirecting...");
+  //   return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  // }
 
-  let parsedToken;
-  try {
-    parsedToken = JSON.parse(encryptedUserCookie);
-  } catch (error) {
-    console.error("Error parsing token:", error);
-    return NextResponse.redirect(new URL("/", request.nextUrl.origin));
-  }
+  // let parsedToken;
+  // try {
+  //   parsedToken = JSON.parse(encryptedUserCookie);
+  // } catch (error) {
+  //   console.error("Error parsing token:", error);
+  //   return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  // }
 
-  const decodedUserData: IDecodedJWT = jwtDecode(parsedToken.accessToken);
+  // const decodedUserData: IDecodedJWT = jwtDecode(parsedToken.accessToken);
 
 
-  if (decodedUserData.role === "employee" && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/", request.nextUrl.origin));
-  }
+  // if (decodedUserData.role === "employee" && pathname.startsWith("/admin")) {
+  //   return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  // }
 
-  if (decodedUserData.role === "admin" || decodedUserData.role === "SuperAdmin" && pathname.startsWith("/employee")) {
-    return NextResponse.redirect(new URL("/", request.nextUrl.origin));
-  }
+  // if (decodedUserData.role === "admin" || decodedUserData.role === "SuperAdmin" && pathname.startsWith("/employee")) {
+  //   return NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  // }
 
-  const isTokenValid =
-    parsedToken.accessToken &&
-    parsedToken.refreshToken &&
-    new Date(parsedToken.expiresAt) > new Date();
+  // const isTokenValid =
+  //   parsedToken.accessToken &&
+  //   parsedToken.refreshToken &&
+  //   new Date(parsedToken.expiresAt) > new Date();
 
-  if (!isTokenValid) {
-    const response = NextResponse.redirect(new URL("/", request.nextUrl.origin));
-    response.cookies.delete("token");
-    return response;
-  }
+  // if (!isTokenValid) {
+  //   const response = NextResponse.redirect(new URL("/", request.nextUrl.origin));
+  //   response.cookies.delete("token");
+  //   return response;
+  // }
 
   return NextResponse.next();
 }

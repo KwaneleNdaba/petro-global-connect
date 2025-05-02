@@ -18,14 +18,14 @@ const DailyReport = () => {
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
   
   // Form States
-  const [fuel95, setFuel95] = useState<any>(0);
-  const [fuel93, setFuel93] = useState<any>(0);
-  const [diesel, setDiesel] = useState<any>(0);;
-  const [shopSales, setShopSales] = useState(0);
-  const [fuelExpenses, setFuelExpenses] = useState(0);
-  const [shopExpenses, setShopExpenses] = useState(0);
+  const [fuel95, setFuel95] = useState<number>(0);
+  const [fuel93, setFuel93] = useState<number>(0);
+  const [diesel, setDiesel] = useState<number>(0);
+  const [shopSales, setShopSales] = useState<number>(0);
+  const [fuelExpenses, setFuelExpenses] = useState<number>(0);
+  const [shopExpenses, setShopExpenses] = useState<number>(0);
 
-  const historicalData = [
+  const historicalData: HistoricalData[] = [
     { date: '2024-02-06', fuel95: 25000, fuel93: 18000, diesel: 30000, shopSales: 15000, expenses: 65000 },
     { date: '2024-02-07', fuel95: 27000, fuel93: 19500, diesel: 32000, shopSales: 16000, expenses: 68000 },
     { date: '2024-02-08', fuel95: 24000, fuel93: 17800, diesel: 29000, shopSales: 14500, expenses: 62000 },
@@ -38,7 +38,7 @@ const DailyReport = () => {
   // Computed values
   const yesterdayData = historicalData[historicalData.length - 2];
   const totalFuelSales = useMemo(() => (
-    (Number(fuel95) || 0) + (fuel93 || 0) + (diesel || 0)
+    (fuel95 || 0) + (fuel93 || 0) + (diesel || 0)
   ).toFixed(2), [fuel95, fuel93, diesel]);
 
   const totalSales = useMemo(() => (
@@ -168,19 +168,19 @@ return (
               <InputField
                 label="Fuel 95 (R)"
                 value={fuel95}
-                onChange={setFuel95}
+                onChange={(value) => setFuel95(Number(value))}
                 icon={<Flame className="w-5 h-5 text-neutral-600" />}
               />
               <InputField
                 label="Fuel 93 (R)"
                 value={fuel93}
-                onChange={setFuel93}
+                onChange={(value) => setFuel93(Number(value))}
                 icon={<Flame className="w-5 h-5 text-neutral-600" />}
               />
               <InputField
                 label="Diesel (R)"
                 value={diesel}
-                onChange={setDiesel}
+                onChange={(value) => setDiesel(Number(value))}
                 icon={<Flame className="w-5 h-5 text-neutral-600" />}
               />
             </div>
@@ -189,7 +189,7 @@ return (
               <InputField
                 label="Shop Sales (R)"
                 value={shopSales}
-                onChange={setShopSales}
+                onChange={(value) => setShopSales(Number(value))}
                 icon={<ShoppingBag className="w-5 h-5 text-neutral-600" />}
               />
             </div>
@@ -205,13 +205,13 @@ return (
               <InputField
                 label="Fuel Expenses (R)"
                 value={fuelExpenses}
-                onChange={setFuelExpenses}
+                onChange={(value) => setFuelExpenses(Number(value))}
                 icon={<Zap className="w-5 h-5 text-neutral-600" />}
               />
               <InputField
                 label="Shop Expenses (R)"
                 value={shopExpenses}
-                onChange={setShopExpenses}
+                onChange={(value) => setShopExpenses(Number(value))}
                 icon={<Wallet className="w-5 h-5 text-neutral-600" />}
               />
             </div>
@@ -342,7 +342,7 @@ const InputField = ({
   icon,
 }: {
   label: string;
-  value: any;
+  value: number;
   onChange: (value: string) => void;
   icon?: React.ReactNode;
 }) => (

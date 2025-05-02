@@ -2,7 +2,7 @@
 import Cookies from "universal-cookie";
 import { jwtDecode } from "jwt-decode";
 import CryptoJS from "crypto-js";
-import { IDecodedJWT, TokenData } from "@/interfaces/user/auth.interface";
+import { IDecodedJWT, TokenData } from "@/interfaces/auth/auth";
 const cookies = new Cookies();
 
 export const decryptUser = () => {

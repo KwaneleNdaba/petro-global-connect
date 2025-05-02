@@ -64,7 +64,6 @@ export const mockAssignedEmployees: IAssignedEmployeeResponse[] = [
     role: "Manager",
     gender: "male",
     stationId: 1,
-    stationName: "Downtown Station"
   },
   {
     id: 2,
@@ -76,7 +75,6 @@ export const mockAssignedEmployees: IAssignedEmployeeResponse[] = [
     role: "Cashier",
     gender: "female",
     stationId: 1,
-    stationName: "Downtown Station"
   },
   {
     id: 3,
@@ -88,6 +86,5 @@ export const mockAssignedEmployees: IAssignedEmployeeResponse[] = [
     role: "Supervisor",
     gender: "female",
     stationId: 1,
-    stationName: "Downtown Station"
   }
 ]; 
