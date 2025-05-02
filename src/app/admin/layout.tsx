@@ -1,5 +1,5 @@
-import { Suspense } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { Suspense } from "react";
 export default function AdminRootLayout({
   children,
 }: {

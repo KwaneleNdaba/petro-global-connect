@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { BankReconciliation } from './BankReconcilation';
-import BankingTable from '@/components/admin/banking/BankingTable';
+import BankingTable from '@/components/admin/banking-management/BankingOverview';
 import { generateDemoBankStatements, generateDemoBankings } from '@/utils/demoBankingData';
 
 
