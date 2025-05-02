@@ -415,6 +415,7 @@ export function CreditorSales() {
           onChange={(e) => setCurrentSale((prev:any) => ({ ...prev, fuelType: e.target.value }))}
           className="w-full p-2 border rounded-lg"
         >
+          <option>Select Type</option>
           {fuelTypes.map(type => (
             <option key={type} value={type}>{type}</option>
           ))}
