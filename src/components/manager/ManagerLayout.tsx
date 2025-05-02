@@ -19,11 +19,13 @@ import {
   ShoppingCart,
   Tags,
   Truck,
-  Box
+  Box,
+  LogOut
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import Link from "next/link";
+import Image from "next/image";
 
 interface MenuItem {
   title: string;
@@ -157,6 +159,12 @@ export default function ManagerLayout({
     setIsOpen(isOpen);
   }, [isOpen]);
 
+  const handleLogout = () => {
+    // Add your logout logic here
+    console.log("Logging out...");
+    // router.push("/logout");
+  };
+
   return (
     <div className="flex min-h-screen bg-neutral-50 ">
       <motion.div
@@ -181,7 +189,28 @@ export default function ManagerLayout({
           }}
           className="flex flex-col bg-neutral-800 h-full fixed"
         >
-          <div className="overflow-y-auto hide-scrollbar flex-1 py-8 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
+          {/* Logo at the top */}
+          <div className="flex items-center justify-center py-4 border-b border-neutral-700">
+            {isOpen ? (
+              <Image 
+                src="/PetroGlobal.png" 
+                alt="PetroGlobal Logo" 
+                width={160} 
+                height={40} 
+                className="object-contain"
+              />
+            ) : (
+              <Image 
+                src="/PetroGlobal.png" 
+                alt="PetroGlobal Logo" 
+                width={40} 
+                height={40} 
+                className="object-contain"
+              />
+            )}
+          </div>
+
+          <div className="overflow-y-auto hide-scrollbar flex-1 py-4 scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
             <div className="px-4 space-y-6">
               {menuItems.map((item, index) => (
                 <motion.div
@@ -233,6 +262,17 @@ export default function ManagerLayout({
                 </motion.div>
               ))}
             </div>
+          </div>
+
+          {/* Logout button at the bottom */}
+          <div className="mt-auto p-4 border-t border-neutral-700">
+            <button
+              onClick={handleLogout}
+              className={`flex items-center ${!isOpen ? "justify-center" : "px-4"} gap-3 py-2 rounded-lg text-sm w-full text-neutral-300 hover:bg-neutral-700`}
+            >
+              <LogOut className="w-5 h-5" />
+              {isOpen && <span>Logout</span>}
+            </button>
           </div>
         </div>
       </motion.div>

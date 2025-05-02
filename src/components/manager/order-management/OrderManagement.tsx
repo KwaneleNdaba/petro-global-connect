@@ -4,63 +4,61 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Fuel, ShoppingCart, Plus, X, ArrowUpDown, Truck, Droplet, Package } from 'lucide-react';
 
 interface Order {
-    id: string;
-    type?: string;
-    product?: string;
-    quantity: number;
-    status: 'Pending' | 'Shipped' | 'Delivered';
-    date: string;
-    supplier: string;
-    price: number;
-  }
-  
-  type OrderType = 'fuel' | 'product';
-  
-  const cardAnimation = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.3 },
-  };
-  
+  id: string;
+  type?: string;
+  product?: string;
+  quantity: number;
+  status: 'Pending' | 'Shipped' | 'Delivered';
+  date: string;
+  supplier: string;
+  price: number;
+}
+
+type OrderType = 'fuel' | 'product';
+
+const cardAnimation = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3 },
+};
 
 const OrderManagement = () => {
-    const [newOrderType, setNewOrderType] = useState<OrderType>('fuel');
-    const [showOrderForm, setShowOrderForm] = useState(false);
-    const [newOrder, setNewOrder] = useState<Partial<Order>>({});
-    const [sortBy, setSortBy] = useState<'date' | 'id' | 'quantity'>('date');
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-    const [filterStatus, setFilterStatus] = useState<string>('all');
-  
-    const suppliers = {
-      fuel: ['Shell Corp', 'BP Global', 'Total Energy'],
-      product: ['Beverage Co', 'Snack Foods Ltd', 'Local Bakery']
-    };
-  
-    const fuelTypes = ['Fuel 95', 'Fuel 93', 'Diesel'];
-    const products = ['Coca-Cola (24x500ml)', 'Chips (Box of 30)', 'Bread Loaves'];
-  
-    const generateOrderId = (type: OrderType) => {
-      const prefix = type === 'fuel' ? 'F' : 'S';
-      const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-      return `#${prefix}${random}`;
-    };
-  
-    const addOrder = () => {
-      const order: Order = {
-        id: generateOrderId(newOrderType),
-        status: 'Pending',
-        date: new Date().toISOString().split('T')[0],
-        ...newOrder,
-        quantity: Number(newOrder.quantity),
-        price: Number(newOrder.price),
-      } as Order;
-  
-      setOrders([order, ...orders]);
-      setShowOrderForm(false);
-      setNewOrder({});
-    };
-  
-  
+  const [newOrderType, setNewOrderType] = useState<OrderType>('fuel');
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [newOrder, setNewOrder] = useState<Partial<Order>>({ status: 'Pending' });
+  const [sortBy, setSortBy] = useState<'date' | 'id' | 'quantity'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  const suppliers = {
+    fuel: ['Shell Corp', 'BP Global', 'Total Energy'],
+    product: ['Beverage Co', 'Snack Foods Ltd', 'Local Bakery']
+  };
+
+  const fuelTypes = ['Fuel 95', 'Fuel 93', 'Diesel'];
+  const products = ['Coca-Cola (24x500ml)', 'Chips (Box of 30)', 'Bread Loaves'];
+
+  const generateOrderId = (type: OrderType) => {
+    const prefix = type === 'fuel' ? 'F' : 'S';
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `#${prefix}${random}`;
+  };
+
+  const addOrder = () => {
+    const order: Order = {
+      id: generateOrderId(newOrderType),
+      status: newOrder.status || 'Pending',
+      date: new Date().toISOString().split('T')[0],
+      ...newOrder,
+      quantity: Number(newOrder.quantity),
+      price: Number(newOrder.price),
+    } as Order;
+
+    setOrders([order, ...orders]);
+    setShowOrderForm(false);
+    setNewOrder({ status: 'Pending' });
+  };
+
   const [orders, setOrders] = useState<Order[]>([
     {
       id: '#F023',
@@ -99,6 +97,7 @@ const OrderManagement = () => {
       price: 2.5
     },
   ]);
+
   const filteredOrders = useMemo(() => {
     let filtered = [...orders];
     if (filterStatus !== 'all') {
@@ -119,23 +118,19 @@ const OrderManagement = () => {
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-neutral-50   p-4 sm:p-6">
+    <div className="min-h-screen bg-neutral-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto space-y-4">
-        {/* Header */}
         <motion.div
           {...cardAnimation}
-          className="flex justify-between items-center p-4 "
+          className="flex justify-between items-center p-4"
         >
           <div>
             <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-3">
               <div className="p-2 bg-neutral-100 rounded-lg">
                 <Fuel className="w-6 h-6 text-neutral-600" />
               </div>
-              <span
-                className="bg-gradient-to-r from-neutral-600 to-neutral-700 bg-clip-text text-transparent"
-              >
+              <span className="bg-gradient-to-r from-neutral-600 to-neutral-700 bg-clip-text text-transparent">
                 Supply Chain Dashboard
               </span>
             </h1>
@@ -150,7 +145,7 @@ const OrderManagement = () => {
             New Order
           </motion.button>
         </motion.div>
-  
+
         <motion.div
           {...cardAnimation}
           className="flex gap-2 flex-wrap bg-white p-3 rounded-xl shadow-sm border border-neutral-200"
@@ -165,7 +160,7 @@ const OrderManagement = () => {
             <option value="Shipped">Shipped</option>
             <option value="Delivered">Delivered</option>
           </select>
-  
+
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
@@ -175,7 +170,7 @@ const OrderManagement = () => {
             <option value="id">ID</option>
             <option value="quantity">Quantity</option>
           </select>
-  
+
           <button
             onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')}
             className="p-1.5 border border-neutral-200 rounded-md text-sm bg-white flex items-center gap-1"
@@ -184,7 +179,7 @@ const OrderManagement = () => {
             {sortDirection.toUpperCase()}
           </button>
         </motion.div>
-  
+
         <AnimatePresence>
           {showOrderForm && (
             <motion.div
@@ -203,31 +198,29 @@ const OrderManagement = () => {
                     <X className="w-5 h-5 text-neutral-400" />
                   </button>
                 </div>
-  
+
                 <div className="space-y-3">
                   <div className="flex gap-2">
                     <button
                       onClick={() => setNewOrderType('fuel')}
-                      className={`px-3 py-1 rounded-md text-sm ${
-                        newOrderType === 'fuel'
+                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'fuel'
                           ? 'bg-neutral-600 text-white'
                           : 'bg-neutral-100 text-neutral-700'
-                      }`}
+                        }`}
                     >
                       Fuel
                     </button>
                     <button
                       onClick={() => setNewOrderType('product')}
-                      className={`px-3 py-1 rounded-md text-sm ${
-                        newOrderType === 'product'
+                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'product'
                           ? 'bg-neutral-600 text-white'
                           : 'bg-neutral-100 text-neutral-700'
-                      }`}
+                        }`}
                     >
                       Product
                     </button>
                   </div>
-  
+
                   {newOrderType === 'fuel' ? (
                     <select
                       value={newOrder.type}
@@ -257,7 +250,7 @@ const OrderManagement = () => {
                       ))}
                     </select>
                   )}
-  
+
                   <select
                     value={newOrder.supplier}
                     onChange={(e) =>
@@ -271,7 +264,19 @@ const OrderManagement = () => {
                       </option>
                     ))}
                   </select>
-  
+
+                  <select
+                    value={newOrder.status}
+                    onChange={(e) =>
+                      setNewOrder({ ...newOrder, status: e.target.value as 'Pending' | 'Shipped' | 'Delivered' })
+                    }
+                    className="w-full p-1.5 border border-neutral-200 rounded-md text-sm"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                  </select>
+
                   <input
                     type="number"
                     placeholder="Quantity"
@@ -281,7 +286,7 @@ const OrderManagement = () => {
                     }
                     className="w-full p-1.5 border border-neutral-200 rounded-md text-sm"
                   />
-  
+
                   <input
                     type="number"
                     placeholder="Price per unit"
@@ -295,7 +300,7 @@ const OrderManagement = () => {
                     }}
                     className="w-full p-1.5 border border-neutral-200 rounded-md text-sm"
                   />
-  
+
                   <div className="flex gap-2 justify-end pt-2">
                     <button
                       onClick={() => setShowOrderForm(false)}
@@ -315,8 +320,7 @@ const OrderManagement = () => {
             </motion.div>
           )}
         </AnimatePresence>
-  
-        {/* Enhanced Orders Table */}
+
         <motion.div
           {...cardAnimation}
           className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden"
@@ -389,27 +393,25 @@ const OrderManagement = () => {
                       })}
                     </td>
                     <td className="p-3">
-                      <span
-                        className={`${getStatusColor(
-                          order.status
-                        )} px-2.5 py-1 rounded-full border inline-flex items-center gap-1.5`}
+                      <select
+                        value={order.status}
+                        onChange={(e) => {
+                          const newStatus = e.target.value as Order['status'];
+                          setOrders(orders.map(o => o.id === order.id ? { ...o, status: newStatus } : o));
+                        }}
+                        className={`${getStatusColor(order.status)} px-2.5 py-1 rounded-full border text-sm cursor-pointer`}
                       >
-                        {order.status === "Shipped" && (
-                          <Truck className="w-3.5 h-3.5 text-neutral-600" />
-                        )}
-                        {order.status === "Delivered" && (
-                          <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        )}
-                        {order.status}
-                      </span>
+                        <option value="Pending">Pending</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-  
-          {/* Empty State */}
+
           {filteredOrders.length === 0 && (
             <div className="p-8 text-center text-neutral-600 flex flex-col items-center">
               <ShoppingCart className="w-12 h-12 text-neutral-400 mb-4" />
@@ -421,11 +423,15 @@ const OrderManagement = () => {
           )}
         </motion.div>
       </div>
-      </div>
-    );
+      <button
 
-  
-
+        className="w-full mt-2 bg-neutral-600 hover:bg-neutral-700 py-2 text-white rounded-xl transition-colors font-semibold flex items-center justify-center gap-2"
+      >
+        <ArrowUpDown className="w-5 h-5 text-white" />
+        Save Changes
+      </button>
+    </div>
+  );
 };
 
 export default OrderManagement;
