@@ -371,116 +371,141 @@ export function CreditorSales() {
 
       {/* Add/Edit Sale Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-
-
-      <motion.div
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  className="bg-white rounded-2xl p-6 max-w-2xl w-full"
->
-  <div className="flex justify-between items-center mb-6">
-    <h2 className="text-2xl font-bold">
-      {isEditing ? 'Edit' : 'New'} Fuel Sale
-    </h2>
-    <button
-      onClick={() => setIsModalOpen(false)}
-      className="p-1 rounded-full hover:bg-neutral-100"
-    >
-      <XMarkIcon className="h-6 w-6" />
-    </button>
-  </div>
-
-  <div className="space-y-4">
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Creditor</label>
-        <select
-          value={currentSale?.creditorId || ''}
-          onChange={(e) => setCurrentSale((prev:any) => ({ ...prev, creditorId: e.target.value }))}
-          className="w-full p-2 border rounded-lg"
-        >
-          <option value="">Select Creditor</option>
-          {creditors.map(creditor => (
-            <option key={creditor.id} value={creditor.id}>
-              {creditor.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Fuel Type</label>
-        <select
-          value={currentSale?.fuelType || ''}
-          onChange={(e) => setCurrentSale((prev:any) => ({ ...prev, fuelType: e.target.value }))}
-          className="w-full p-2 border rounded-lg"
-        >
-          <option>Select Type</option>
-          {fuelTypes.map(type => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
-      </div>
-    </div>
-
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Liters</label>
-        <input
-          type="number"
-          value={currentSale?.liters || ''}
-          onChange={(e) => setCurrentSale((prev:any) => ({
-            ...prev,
-            liters: parseFloat(e.target.value)
-          }))}
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Price/Liter (R)</label>
-        <input
-          type="number"
-          step="0.01"
-          value={currentSale?.pricePerLiter || ''}
-          onChange={(e) => setCurrentSale((prev:any) => ({
-            ...prev,
-            pricePerLiter: parseFloat(e.target.value)
-          }))}
-          className="w-full p-2 border rounded-lg"
-        />
-      </div>
-    </div>
-
-    <div>
-      <label className="block text-sm font-medium mb-1">Total Amount</label>
-      <input
-        type="text"
-        value={`R ${currentSale?.amount?.toLocaleString() || '0'}`}
-        readOnly
-        className="w-full p-2 border rounded-lg bg-neutral-50 font-medium"
-      />
-    </div>
-
-    <div className="flex justify-end gap-3 mt-6">
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: 20 }}
+    transition={{ duration: 0.2 }}
+    className=" max-w-2xl w-full  "
+  >
+    <div className="flex justify-between items-center mb-6 pb-4 border-b border-neutral-100">
+      <h2 className="text-2xl font-bold text-neutral-800">
+        {isEditing ? 'Edit' : 'New'} Fuel Sale
+      </h2>
       <button
         onClick={() => setIsModalOpen(false)}
-        className="px-4 py-2 text-neutral-600 hover:bg-neutral-100 rounded-lg"
+        className="p-1 rounded-full hover:bg-neutral-100 transition-colors"
       >
-        Cancel
-      </button>
-      <button
-        onClick={handleSaveSale}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-      >
-        {isEditing ? 'Save Changes' : 'Create Sale'}
+        <XMarkIcon className="h-5 w-5 text-neutral-500 hover:text-neutral-700" />
       </button>
     </div>
-  </div>
-</motion.div>
 
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            Creditor
+          </label>
+          <select
+            value={currentSale?.creditorId || ''}
+            onChange={(e) => setCurrentSale((prev: any) => ({ ...prev, creditorId: e.target.value }))}
+            className="w-full p-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          >
+            <option value="">Select Creditor</option>
+            {creditors.map(creditor => (
+              <option key={creditor.id} value={creditor.id}>
+                {creditor.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      </Modal>
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            Fuel Type
+          </label>
+          <select
+            value={currentSale?.fuelType || ''}
+            onChange={(e) => setCurrentSale((prev: any) => ({ ...prev, fuelType: e.target.value }))}
+            className="w-full p-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          >
+            <option value="">Select Type</option>
+            {fuelTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            Liters
+          </label>
+          <div className="relative">
+            <input
+              type="number"
+              value={currentSale?.liters || ''}
+              onChange={(e) => setCurrentSale((prev: any) => ({
+                ...prev,
+                liters: parseFloat(e.target.value)
+              }))}
+              className="w-full p-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pr-10"
+              placeholder="0.00"
+            />
+            <span className="absolute right-3 top-3 text-neutral-500">L</span>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
+            Price/Liter
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-3 text-neutral-500">R</span>
+            <input
+              type="number"
+              step="0.01"
+              value={currentSale?.pricePerLiter || ''}
+              onChange={(e) => setCurrentSale((prev: any) => ({
+                ...prev,
+                pricePerLiter: parseFloat(e.target.value)
+              }))}
+              className="w-full p-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all pl-8"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-neutral-700 mb-1">
+          Total Amount
+        </label>
+        <div className="relative">
+          <input
+            type="text"
+            value={`R ${currentSale?.amount?.toLocaleString(undefined, { minimumFractionDigits: 2 }) || '0.00'}`}
+            readOnly
+            className="w-full p-3 border border-neutral-300 rounded-lg bg-neutral-50 font-medium text-neutral-800 pl-8"
+          />
+          <span className="absolute left-3 top-3 text-neutral-500">
+            <CurrencyDollarIcon className="h-5 w-5" />
+          </span>
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 pt-4 border-t border-neutral-100">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setIsModalOpen(false)}
+          className="px-5 py-2.5 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors font-medium"
+        >
+          Cancel
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSaveSale}
+          className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm"
+        >
+          {isEditing ? 'Save Changes' : 'Create Sale'}
+        </motion.button>
+      </div>
+    </div>
+  </motion.div>
+</Modal>
     </motion.div>
   );
 }
