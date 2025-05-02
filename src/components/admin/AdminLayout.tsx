@@ -27,6 +27,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import Link from "next/link";
+import { ConfirmationModal } from "../ConfirmationModal";
 
 interface MenuItem {
   title: string;
@@ -49,6 +50,8 @@ export default function AdminLayout({
   const isMobile = useMobileDetection();
   const pathname = usePathname();
   const router = useRouter();
+  const [openConfirmationModal, setOpenConfirmationModal] = useState(false);
+  
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
       title: "HOME",
@@ -293,7 +296,7 @@ export default function AdminLayout({
             transition={{ duration: 0.2 }}
           >
             <button
-              onClick={handleLogout}
+              onClick={() => setOpenConfirmationModal(true)}
               className={`flex items-center ${!isOpen ? "justify-center" : "px-4"} gap-3 py-2 rounded-lg text-sm w-full text-neutral-300 hover:text-white`}
             >
               <motion.div
@@ -345,6 +348,15 @@ export default function AdminLayout({
 
         <main className="px-6 min-h-[calc(100vh-4rem)]">{children}</main>
       </div>
+           <ConfirmationModal
+                    show={openConfirmationModal}
+                    isLoading={false}
+                    onClose={() => setOpenConfirmationModal(false)}
+                    onConfirm={handleLogout}
+                    message="Are you sure you want to log out?"
+                    confirmText="Log Out"
+                    confirmColor="warning"
+                  />
     </div>
   );
 }

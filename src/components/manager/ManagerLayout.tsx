@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMobileDetection } from "@/hooks/useMobileDetection";
 import Link from "next/link";
 import Image from "next/image";
+import { ConfirmationModal } from "../ConfirmationModal";
 
 interface MenuItem {
   title: string;
@@ -47,6 +48,8 @@ export default function ManagerLayout({
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = useMobileDetection();
   const pathname = usePathname();
+  const [openConfirmationModal, setOpenConfirmationModal] = useState(false);
+  
   const router = useRouter();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([
     {
@@ -160,9 +163,7 @@ export default function ManagerLayout({
   }, [isOpen]);
 
   const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
-    // router.push("/logout");
+ router.push("/")
   };
 
   return (
@@ -301,7 +302,7 @@ export default function ManagerLayout({
             transition={{ duration: 0.2 }}
           >
             <button
-              onClick={handleLogout}
+                   onClick={() => setOpenConfirmationModal(true)}
               className={`flex items-center ${!isOpen ? "justify-center" : "px-4"} gap-3 py-2 rounded-lg text-sm w-full text-neutral-300 hover:text-white`}
             >
               <motion.div
@@ -353,6 +354,15 @@ export default function ManagerLayout({
 
         <main className="px-6 min-h-[calc(100vh-4rem)]">{children}</main>
       </div>
+          <ConfirmationModal
+              show={openConfirmationModal}
+              isLoading={false}
+              onClose={() => setOpenConfirmationModal(false)}
+              onConfirm={handleLogout}
+              message="Are you sure you want to log out?"
+              confirmText="Log Out"
+              confirmColor="warning"
+            />
     </div>
   );
 }
