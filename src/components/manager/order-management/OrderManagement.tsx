@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Fuel, ShoppingCart, Plus, X, ArrowUpDown, Truck, Droplet, Package } from 'lucide-react';
+import { Fuel, ShoppingCart, Plus, X, ArrowUpDown, Truck, Droplet, Package, Save } from 'lucide-react';
 
 interface Order {
   id: string;
@@ -29,7 +29,7 @@ const OrderManagement = () => {
   const [sortBy, setSortBy] = useState<'date' | 'id' | 'quantity'>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-
+  const [showNotification, setShowNotification] = useState(false);
   const suppliers = {
     fuel: ['Shell Corp', 'BP Global', 'Total Energy'],
     product: ['Beverage Co', 'Snack Foods Ltd', 'Local Bakery']
@@ -53,16 +53,16 @@ const OrderManagement = () => {
       quantity: Number(newOrder.quantity),
       price: Number(newOrder.price),
       // Add type/product based on order type
-      ...(newOrderType === 'fuel' 
-        ? { type: newOrder.type } 
+      ...(newOrderType === 'fuel'
+        ? { type: newOrder.type }
         : { product: newOrder.product })
     } as Order;
-  
+
     setOrders([order, ...orders]);
     setShowOrderForm(false);
     setNewOrder({ status: 'Pending' });
   };
-  
+
 
   const [orders, setOrders] = useState<Order[]>([
     {
@@ -205,42 +205,40 @@ const OrderManagement = () => {
                 </div>
 
                 <div className="space-y-3">
-                <div className="flex gap-2">
-  <button
-    onClick={() => {
-      setNewOrderType('fuel');
-      setNewOrder(prev => ({ 
-        ...prev, 
-        product: undefined,
-        type: fuelTypes[0] 
-      }));
-    }}
-    className={`px-3 py-1 rounded-md text-sm ${
-      newOrderType === 'fuel'
-        ? 'bg-neutral-600 text-white'
-        : 'bg-neutral-100 text-neutral-700'
-    }`}
-  >
-    Fuel
-  </button>
-  <button
-    onClick={() => {
-      setNewOrderType('product');
-      setNewOrder(prev => ({ 
-        ...prev, 
-        type: undefined,
-        product: products[0] 
-      }));
-    }}
-    className={`px-3 py-1 rounded-md text-sm ${
-      newOrderType === 'product'
-        ? 'bg-neutral-600 text-white'
-        : 'bg-neutral-100 text-neutral-700'
-    }`}
-  >
-    Product
-  </button>
-</div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setNewOrderType('fuel');
+                        setNewOrder(prev => ({
+                          ...prev,
+                          product: undefined,
+                          type: fuelTypes[0]
+                        }));
+                      }}
+                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'fuel'
+                          ? 'bg-neutral-600 text-white'
+                          : 'bg-neutral-100 text-neutral-700'
+                        }`}
+                    >
+                      Fuel
+                    </button>
+                    <button
+                      onClick={() => {
+                        setNewOrderType('product');
+                        setNewOrder(prev => ({
+                          ...prev,
+                          type: undefined,
+                          product: products[0]
+                        }));
+                      }}
+                      className={`px-3 py-1 rounded-md text-sm ${newOrderType === 'product'
+                          ? 'bg-neutral-600 text-white'
+                          : 'bg-neutral-100 text-neutral-700'
+                        }`}
+                    >
+                      Product
+                    </button>
+                  </div>
 
                   {newOrderType === 'fuel' ? (
                     <select
@@ -386,19 +384,19 @@ const OrderManagement = () => {
                     </td>
                     <td className="p-3 text-neutral-600">{order.date}</td>
                     <td className="p-3">
-  <div className="flex items-center gap-2">
-    {newOrderType === 'fuel' ? order.type : order.product}
-    {order.type ? (
-      <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
-        Fuel
-      </span>
-    ) : (
-      <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
-        Product
-      </span>
-    )}
-  </div>
-</td>
+                      <div className="flex items-center gap-2">
+                        {newOrderType === 'fuel' ? order.type : order.product}
+                        {order.type ? (
+                          <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
+                            Fuel
+                          </span>
+                        ) : (
+                          <span className="text-xs px-1.5 py-0.5 bg-neutral-100 text-neutral-900 rounded">
+                            Product
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <Truck className="w-4 h-4 text-neutral-400" />
@@ -450,12 +448,27 @@ const OrderManagement = () => {
         </motion.div>
       </div>
       <button
-
+        onClick={() => setShowNotification(true)}
         className="w-full mt-2 bg-neutral-600 hover:bg-neutral-700 py-2 text-white rounded-xl transition-colors font-semibold flex items-center justify-center gap-2"
       >
         <ArrowUpDown className="w-5 h-5 text-white" />
         Save Changes
       </button>
+
+      <AnimatePresence>
+        {showNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 shadow-lg"
+            role="status"
+          >
+            <Save className="w-4 h-4 text-white" />
+            All changes saved successfully
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

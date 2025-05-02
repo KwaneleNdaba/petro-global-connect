@@ -1,17 +1,22 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, PencilIcon, TrashIcon, CheckIcon, XMarkIcon, CurrencyDollarIcon, ScaleIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { 
+  PlusIcon, PencilIcon, TrashIcon, CheckIcon, 
+  XMarkIcon, CurrencyDollarIcon, ScaleIcon, 
+  UserGroupIcon, TruckIcon 
+} from '@heroicons/react/24/outline';
+import { FuelIcon } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
-import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
-// ... (keep existing interfaces)
 interface Creditor {
   id: string;
   name: string;
   contact: string;
   creditLimit: number;
   balance: number;
+  avatarColor: string;
 }
 
 type CreditorStatus = 'pending' | 'partially-paid' | 'paid';
@@ -25,9 +30,10 @@ interface CreditorSale {
   fuelType: string;
   liters: number;
   pricePerLiter: number;
-  status: CreditorStatus
+  status: CreditorStatus;
   notes?: string;
 }
+
 const cardAnimation = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -40,6 +46,8 @@ const rowAnimation = {
   exit: { opacity: 0, x: 10 },
 };
 
+const fuelTypes = ['Diesel 50ppm', 'Fuel 95', 'Fuel 93', 'Diesel 500ppm'];
+
 export function CreditorSales() {
   const [creditors, setCreditors] = useState<Creditor[]>([
     {
@@ -47,9 +55,17 @@ export function CreditorSales() {
       name: 'ABC Transport',
       contact: '0712345678',
       creditLimit: 50000,
-      balance: 12500
+      balance: 12500,
+      avatarColor: 'bg-blue-500'
     },
-    // Add more creditors
+    {
+      id: '2',
+      name: 'City Logistics',
+      contact: '0723456789',
+      creditLimit: 75000,
+      balance: 32500,
+      avatarColor: 'bg-green-500'
+    },
   ]);
 
   const [sales, setSales] = useState<CreditorSale[]>([
@@ -65,19 +81,31 @@ export function CreditorSales() {
       status: 'pending',
       notes: 'Monthly delivery'
     },
-    // Add more sales
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentSale, setCurrentSale] = useState<Partial<CreditorSale> | null>(null);
+  const [currentSale, setCurrentSale] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (currentSale?.liters && currentSale?.pricePerLiter) {
+      setCurrentSale((prev:any) => ({
+        ...prev,
+        amount: Number((prev.liters! * prev.pricePerLiter!).toFixed(2))
+      }));
+    }
+  }, [currentSale?.liters, currentSale?.pricePerLiter]);
 
   const handleAddSale = () => {
     setCurrentSale({
       date: new Date(),
-      status: 'pending'
+      status: 'pending',
+      liters: 0,
+      pricePerLiter: 0,
+      amount: 0
     });
-    setIsEditing(true);
+    setIsEditing(false);
     setIsModalOpen(true);
   };
 
@@ -87,79 +115,103 @@ export function CreditorSales() {
     setIsModalOpen(true);
   };
 
+  const validateSale = () => {
+    if (!currentSale?.creditorId) {
+      toast.error('Please select a creditor');
+      return false;
+    }
+    if (!currentSale.fuelType) {
+      toast.error('Please select fuel type');
+      return false;
+    }
+    if (currentSale.liters! <= 0) {
+      toast.error('Please enter valid liters');
+      return false;
+    }
+    return true;
+  };
+
   const handleSaveSale = () => {
-    if (!currentSale) return;
+    if (!validateSale()) return;
 
-    // Ensure status is properly typed
-    const status: CreditorStatus = currentSale.status || 'pending';
+    const saleData = {
+      ...currentSale,
+      date: currentSale.date || new Date(),
+      invoiceNumber: `INV-${new Date().getFullYear()}-${sales.length + 1}`,
+      amount: Number(currentSale.amount!.toFixed(2)),
+    };
 
-    if (isEditing && currentSale.id) {
-      // Update existing sale with proper status type
-      setSales(sales.map(s => 
-        s.id === currentSale.id ? { 
-          ...s, 
-          ...currentSale,
-          status: status
-        } : s
-      ));
-    } else {
-      // Add new sale with proper status type
-      const newSale: CreditorSale = {
-        ...currentSale,
-        id: Date.now().toString(),
-        invoiceNumber: `INV-${new Date().getFullYear()}-${sales.length + 1}`,
-        status: status,
-        date: currentSale.date || new Date(),
-        creditorId: currentSale.creditorId || '',
-        fuelType: currentSale.fuelType || '',
-        liters: currentSale.liters || 0,
-        pricePerLiter: currentSale.pricePerLiter || 0,
-        amount: currentSale.amount || 0
-      } as CreditorSale;
-      setSales([...sales, newSale]);
+    setSales(prev => isEditing
+      ? prev.map(s => s.id === saleData.id ? saleData as CreditorSale : s)
+      : [...prev, { ...saleData, id: Date.now().toString() } as CreditorSale]
+    );
+
+    if (!isEditing) {
+      const creditor = creditors.find(c => c.id === saleData.creditorId);
+      if (creditor) {
+        setCreditors(prev => prev.map(c => c.id === creditor.id 
+          ? { ...c, balance: c.balance + saleData.amount! }
+          : c
+        ));
+      }
     }
 
+    toast.success(`Sale ${isEditing ? 'updated' : 'added'} successfully`);
     setIsModalOpen(false);
   };
 
   const handleDeleteSale = (id: string) => {
-    setSales(sales.filter(s => s.id !== id));
+    setSales(prev => prev.filter(s => s.id !== id));
+    toast.success('Sale deleted');
   };
 
-  const handlePayment = (id: string, amount: number) => {
-    const sale = sales.find(s => s.id === id);
+  const handlePayment = async (saleId: string) => {
+    const sale = sales.find(s => s.id === saleId);
     if (!sale) return;
 
-    const newStatus: CreditorStatus = amount >= sale.amount ? 'paid' : 'partially-paid';
+    const creditor = creditors.find(c => c.id === sale.creditorId);
+    if (!creditor) return;
 
-    const updatedSales = sales.map(s => 
-      s.id === id ? { 
-        ...s, 
-        status: newStatus
-      } : s
+    const remaining = sale.amount - (creditor.creditLimit - creditor.balance);
+    const paymentAmount = parseFloat(
+      prompt(`Enter payment amount (max: R${remaining.toFixed(2)}):`) || '0'
     );
 
-    const creditor = creditors.find(c => c.id === sale.creditorId);
-    if (creditor) {
-      const updatedCreditors = creditors.map(c => 
-        c.id === creditor.id ? { 
-          ...c, 
-          balance: Math.max(0, c.balance - amount) 
-        } : c
-      );
-      setCreditors(updatedCreditors);
+    if (paymentAmount <= 0 || paymentAmount > remaining) {
+      toast.error('Invalid payment amount');
+      return;
     }
 
-    setSales(updatedSales);
+    const newStatus: CreditorStatus = paymentAmount >= sale.amount ? 'paid' : 'partially-paid';
+
+    setSales(prev => prev.map(s => 
+      s.id === saleId ? { ...s, status: newStatus } : s
+    ));
+
+    setCreditors(prev => prev.map(c => 
+      c.id === creditor.id ? { ...c, balance: c.balance - paymentAmount } : c
+    ));
+
+    toast.success(`Payment of R${paymentAmount.toFixed(2)} recorded`);
   };
 
   const getStatusStyles = (status: CreditorStatus) => {
     switch (status) {
-      case 'paid': return 'bg-emerald-500/10 text-emerald-600 border-emerald-200';
-      case 'partially-paid': return 'bg-amber-500/10 text-amber-600 border-amber-200';
-      default: return 'bg-rose-500/10 text-rose-600 border-rose-200';
+      case 'paid': return 'bg-emerald-100 text-emerald-800';
+      case 'partially-paid': return 'bg-amber-100 text-amber-800';
+      default: return 'bg-rose-100 text-rose-800';
     }
   };
+
+  const filteredSales = sales.filter(sale => {
+    const creditor = creditors.find(c => c.id === sale.creditorId);
+    return creditor?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      sale.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+
+
+  
 
   return (
     <motion.div
@@ -167,169 +219,146 @@ export function CreditorSales() {
       animate="animate"
       className="space-y-6 p-6 bg-neutral-50 min-h-screen"
     >
-      {/* Header and Actions */}
-      <motion.div
-        {...cardAnimation}
-        className="flex justify-between items-center p-6"
-      >
-        <div>
-          <h2 className="text-3xl font-bold text-neutral-900 flex items-center gap-3">
-            <div className="p-3 bg-neutral-100 rounded-xl">
-              <CurrencyDollarIcon className="h-8 w-8 text-neutral-600" />
-            </div>
-            Creditor Management
-          </h2>
-          <p className="text-neutral-600 mt-2">Manage creditor accounts and fuel sales</p>
-        </div>
-        <motion.button
+      {/* Header Section */}
+      <motion.div {...cardAnimation} className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-neutral-900">
+              Creditor Sales Management
+            </h1>
+            <p className="text-neutral-600 mt-2">Manage fuel sales and creditor accounts</p>
+          </div>
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {}}
-            className="px-4 py-2 bg-gradient-to-r from-neutral-600 to-neutral-700 text-white rounded-lg text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-shadow"
+            onClick={handleAddSale}
+            className="px-4 py-2 bg-neutral-600 text-white rounded-lg flex items-center gap-2 hover:bg-neutral-700"
           >
-            <Plus className="w-4 h-4" />
+            <PlusIcon className="h-5 w-5" />
             New Sale
           </motion.button>
+        </div>
+
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search sales..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-2 pl-10 border rounded-lg focus:ring-1 focus:ring-neutral-400 bg-white"
+          />
+          <TruckIcon className="absolute left-3 top-3 h-5 w-5 text-neutral-400" />
+        </div>
       </motion.div>
-  
-      {/* Summary Cards */}
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          {...cardAnimation}
-          className="bg-white p-5 rounded-xl border shadow-sm border-neutral-200"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-neutral-100 rounded-lg">
-              <CurrencyDollarIcon className="h-6 w-6 text-neutral-600" />
+        {[
+          {
+            icon: CurrencyDollarIcon,
+            title: 'Total Sales Value',
+            value: sales.reduce((sum, s) => sum + s.amount, 0).toLocaleString(),
+            bg: 'bg-neutral-100'
+          },
+          {
+            icon: ScaleIcon,
+            title: 'Average Transaction',
+            value: (sales.reduce((sum, s) => sum + s.amount, 0) / (sales.length || 1)).toFixed(2),
+            bg: 'bg-neutral-100'
+          },
+          {
+            icon: UserGroupIcon,
+            title: 'Active Creditors',
+            value: creditors.length,
+            bg: 'bg-neutral-100'
+          }
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.title}
+            {...cardAnimation}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white p-5 rounded-xl shadow-sm"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`p-3 ${stat.bg} rounded-lg`}>
+                <stat.icon className="h-6 w-6 text-neutral-600" />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-600">{stat.title}</p>
+                <p className="text-2xl font-bold text-neutral-900">
+                  {stat.title.includes('Value') ? 'R' : ''}{stat.value}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-neutral-600">Total Outstanding</p>
-              <p className="text-2xl font-bold text-neutral-900">
-                R
-                {creditors
-                  .reduce((sum, c) => sum + c.balance, 0)
-                  .toLocaleString("en-US", { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-  
-        <motion.div
-          {...cardAnimation}
-          transition={{ delay: 0.1 }}
-          className="bg-white p-5 rounded-xl border shadow-sm border-neutral-200"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-neutral-100 rounded-lg">
-              <UserGroupIcon className="h-6 w-6 text-neutral-600" />
-            </div>
-            <div>
-              <p className="text-sm text-neutral-600">Active Creditors</p>
-              <p className="text-2xl font-bold text-neutral-900">{creditors.length}</p>
-            </div>
-          </div>
-        </motion.div>
-  
-        <motion.div
-          {...cardAnimation}
-          transition={{ delay: 0.2 }}
-          className="bg-white p-5 rounded-xl shadow-sm border border-neutral-200"
-        >
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-neutral-100 rounded-lg">
-              <ScaleIcon className="h-6 w-6 text-neutral-600" />
-            </div>
-            <div>
-              <p className="text-sm text-neutral-600">Pending Invoices</p>
-              <p className="text-2xl font-bold text-neutral-900">
-                {sales.filter((s) => s.status !== "paid").length}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        ))}
       </div>
-  
+
       {/* Sales Table */}
       <motion.div
         {...cardAnimation}
-        className="bg-white rounded-xl shadow-sm overflow-hidden border border-neutral-200"
+        className="bg-white rounded-xl shadow-sm overflow-hidden"
       >
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
+            <thead className="bg-neutral-50">
               <tr>
-                {[
-                  "Date",
-                  "Creditor",
-                  "Invoice",
-                  "Fuel Type",
-                  "Liters",
-                  "Amount",
-                  "Status",
-                  "Actions",
-                ].map((header, index) => (
-                  <th
-                    key={header}
-                    className={`px-6 py-4 text-left text-sm font-medium text-neutral-600 ${
-                      index === 0 ? "rounded-tl-xl" : ""
-                    }`}
+                {['Date', 'Creditor', 'Fuel', 'Liters', 'Amount', 'Status'].map((header) => (
+                  <th 
+                    key={header} 
+                    className="px-6 py-4 text-left text-sm font-medium text-neutral-600"
                   >
                     {header}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y shadow-sm divide-neutral-200">
+            <tbody className="divide-y divide-neutral-100">
               <AnimatePresence>
-                {sales.map((sale) => {
-                  const creditor = creditors.find((c) => c.id === sale.creditorId);
+                {filteredSales.map((sale) => {
+                  const creditor = creditors.find(c => c.id === sale.creditorId);
                   return (
                     <motion.tr
                       key={sale.id}
                       variants={rowAnimation}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                      className="hover:bg-neutral-50 transition-colors"
+                      className="hover:bg-neutral-50/50 transition-colors"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
-                        {new Date(sale.date).toLocaleDateString("en-ZA")}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium text-neutral-900">
-                        {creditor?.name || "Unknown"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 font-mono">
-                        {sale.invoiceNumber}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
-                        {sale.fuelType}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-neutral-600">
-                        {sale.liters.toLocaleString("en-US", {
-                          maximumFractionDigits: 2,
-                        })}{" "}
-                        L
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-neutral-900">
-                        R
-                        {sale.amount.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}
+                      <td className="px-6 py-4 whitespace-nowrap text-neutral-900">
+                        {new Date(sale.date).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`${getStatusStyles(
-                            sale.status
-                          )} px-3 py-1 rounded-full text-xs font-medium border flex items-center gap-1.5 w-fit`}
-                        >
-                          {sale.status === "paid" && (
-                            <CheckIcon className="h-4 w-4 text-neutral-600" />
-                          )}
-                          {sale.status.replace("-", " ")}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center">
+                            <span className="text-sm font-medium text-neutral-600">
+                              {creditor?.name.charAt(0)}
+                            </span>
+                          </div>
+                          <span className="font-medium text-neutral-900">
+                            {creditor?.name}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap flex gap-2">
-                        {/* Action buttons */}
+                      <td className="px-6 py-4 whitespace-nowrap text-neutral-600">
+                        {sale.fuelType}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-neutral-600">
+                        {sale.liters.toLocaleString()} L
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap font-medium text-neutral-900">
+                        R{sale.amount.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <select
+                          value={sale.status}
+                          onChange={(e) => setSales(prev => prev.map(s => 
+                            s.id === sale.id ? { ...s, status: e.target.value as CreditorStatus } : s
+                          ))}
+                          className={`${getStatusStyles(sale.status)} px-3 py-1 rounded-full text-sm cursor-pointer`}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="partially-paid">Partially Paid</option>
+                          <option value="paid">Paid</option>
+                        </select>
                       </td>
                     </motion.tr>
                   );
@@ -339,88 +368,118 @@ export function CreditorSales() {
           </table>
         </div>
       </motion.div>
-  
-      {/* Creditor Balances */}
-      <motion.div
-        {...cardAnimation}
-        className="bg-white rounded-xl p-6 border border-neutral-200"
-      >
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-neutral-900">
-          <UserGroupIcon className="h-6 w-6 text-neutral-600" />
-          Creditor Accounts
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
-              <tr>
-                {[
-                  "Creditor",
-                  "Contact",
-                  "Credit Limit",
-                  "Balance",
-                  "Available",
-                ].map((header) => (
-                  <th
-                    key={header}
-                    className="px-6 py-3 text-left text-sm font-medium text-neutral-600"
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-200">
-              {creditors.map((creditor) => (
-                <tr
-                  key={creditor.id}
-                  className="hover:bg-neutral-50 transition-colors"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap font-medium text-neutral-900">
-                    {creditor.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-neutral-600">
-                    {creditor.contact}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-neutral-600">
-                    R{creditor.creditLimit.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right font-medium text-neutral-900">
-                    R{creditor.balance.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-neutral-600">
-                    R{(creditor.creditLimit - creditor.balance).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </motion.div>
-  
+
       {/* Add/Edit Sale Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-6 max-w-2xl w-full"
+
+
+      <motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="bg-white rounded-2xl p-6 max-w-2xl w-full"
+>
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-2xl font-bold">
+      {isEditing ? 'Edit' : 'New'} Fuel Sale
+    </h2>
+    <button
+      onClick={() => setIsModalOpen(false)}
+      className="p-1 rounded-full hover:bg-neutral-100"
+    >
+      <XMarkIcon className="h-6 w-6" />
+    </button>
+  </div>
+
+  <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium mb-1">Creditor</label>
+        <select
+          value={currentSale?.creditorId || ''}
+          onChange={(e) => setCurrentSale((prev:any) => ({ ...prev, creditorId: e.target.value }))}
+          className="w-full p-2 border rounded-lg"
         >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-neutral-900">
-              {isEditing ? "Edit" : "Add"} Creditor Sale
-            </h2>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="p-1 rounded-full hover:bg-neutral-100 focus:outline-none"
-            >
-              <XMarkIcon className="h-6 w-6 text-neutral-600" />
-            </button>
-          </div>
-  
-          {/* …the rest of the form, inputs and buttons… */}
-        </motion.div>
+          <option value="">Select Creditor</option>
+          {creditors.map(creditor => (
+            <option key={creditor.id} value={creditor.id}>
+              {creditor.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Fuel Type</label>
+        <select
+          value={currentSale?.fuelType || ''}
+          onChange={(e) => setCurrentSale((prev:any) => ({ ...prev, fuelType: e.target.value }))}
+          className="w-full p-2 border rounded-lg"
+        >
+          {fuelTypes.map(type => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium mb-1">Liters</label>
+        <input
+          type="number"
+          value={currentSale?.liters || ''}
+          onChange={(e) => setCurrentSale((prev:any) => ({
+            ...prev,
+            liters: parseFloat(e.target.value)
+          }))}
+          className="w-full p-2 border rounded-lg"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1">Price/Liter (R)</label>
+        <input
+          type="number"
+          step="0.01"
+          value={currentSale?.pricePerLiter || ''}
+          onChange={(e) => setCurrentSale((prev:any) => ({
+            ...prev,
+            pricePerLiter: parseFloat(e.target.value)
+          }))}
+          className="w-full p-2 border rounded-lg"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label className="block text-sm font-medium mb-1">Total Amount</label>
+      <input
+        type="text"
+        value={`R ${currentSale?.amount?.toLocaleString() || '0'}`}
+        readOnly
+        className="w-full p-2 border rounded-lg bg-neutral-50 font-medium"
+      />
+    </div>
+
+    <div className="flex justify-end gap-3 mt-6">
+      <button
+        onClick={() => setIsModalOpen(false)}
+        className="px-4 py-2 text-neutral-600 hover:bg-neutral-100 rounded-lg"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={handleSaveSale}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        {isEditing ? 'Save Changes' : 'Create Sale'}
+      </button>
+    </div>
+  </div>
+</motion.div>
+
+
       </Modal>
     </motion.div>
   );
-  
- 
 }
